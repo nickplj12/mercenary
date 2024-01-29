@@ -24,6 +24,10 @@ async def on_ready():
   print("connected")
 
 #redchanit funny
+#@client.event
+#async def on_message(message):
+#   if message.channel.id == 1056351978982211634:
+#      await message.add_reaction("<:emesisgreen:1085453263454863480>")
 
 @client.command()
 async def say(ctx, *, prompt):
@@ -41,6 +45,8 @@ async def cmds(ctx):
     embed.add_field(name=f"{PREFIX}backstory", value="Change the backstory for the AI.", inline=False)
     embed.add_field(name=f"{PREFIX}backstory default", value="Resets the backstory back to the default one.", inline=False)
     embed.add_field(name=f"{PREFIX}say", value="Makes the bot say something.", inline=False)
+    embed.add_field(name=f"{PREFIX}sdxl", value="Generates an image using a prompt that uses SDXL", inline=False)
+    embed.add_field(name=f"{PREFIX}kadinsky", value="Generates an image using a prompt that uses Kadinsky 2.2", inline=False)
     embed.add_field(name="Default Prompt", value=PROMPT, inline=False)
     if get_server_prompt(ctx) != PROMPT:
         embed.add_field(name="Current Prompt", value=get_server_prompt(ctx), inline=False)
@@ -69,10 +75,39 @@ async def ask(ctx, *, question):
                 "min_new_tokens": -1
             },
         )
-    
+
+    for event in message:
+        print(f"{ctx.message.author} asked: {question}")
+        print("output: " + str(event), end="")
+
     #embed=discord.Embed(title="Message", description=''.join(message), color=0x8300b3)
     #await ctx.send(embed=embed)
     await ctx.send(''.join(message))
-     
+
+
+@client.command()
+async def sdxl(ctx, *, prompt):
+    async with ctx.typing():
+        output = replicate.run(
+            "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+            input = {
+                "prompt": prompt
+            },
+        )
+        await ctx.send(f"My picture of **{prompt}** is done! Frickin' awesome!")
+        await ctx.send(''.join(output))
+
+@client.command()
+async def kadinsky(ctx, *, prompt):
+    async with ctx.typing():
+        output = replicate.run(
+            "ai-forever/kandinsky-2.2:ea1addaab376f4dc227f5368bbd8eff901820fd1cc14ed8cad63b29249e9d463",
+            input = {
+                "prompt": prompt
+            },
+        )
+        await ctx.send(f"My picture of **{prompt}** is done! Frickin' awesome!")
+        await ctx.send(''.join(output))
+
 
 client.run(os.environ['DISCORD_TOKEN'])
