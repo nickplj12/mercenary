@@ -24,10 +24,6 @@ async def on_ready():
   print("connected")
 
 #redchanit funny
-@client.event
-async def on_message(message):
-   if message.channel.id == 1056351978982211634:
-      await message.add_reaction("<:emesisgreen:1085453263454863480>")
 
 @client.command()
 async def say(ctx, *, prompt):
