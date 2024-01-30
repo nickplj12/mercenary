@@ -26,7 +26,7 @@ async def on_ready():
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send("Invalid command used.")
+        await ctx.send("Invalid command used. `trying to ask something use ;ask [prompt here] if you want a list of commands do ;cmds`")
     else:
         await ctx.send(f"An error occurred: {str(error)}")
 
