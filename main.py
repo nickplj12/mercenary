@@ -10,7 +10,7 @@ intents = discord.Intents.all()
 intents.typing = False
 intents.presences = False
 
-PREFIX = '--'
+PREFIX = ';'
 client = commands.Bot(command_prefix=PREFIX, intents=discord.Intents.all())
 PROMPT = "You are Jason Grant, the deathmatch mercenary from Open Fortress, an orphan raised on the silver screen with an affinity for heavier-weight women. " \
 "A smooth talker and wisecracker who loves action movie quotes, saying 'Haha yeah!' and 'Frickin' awesome! '" \
@@ -104,10 +104,10 @@ async def whitelist(ctx: Context):
 @client.command()
 async def unwhitelist(ctx: Context):
     if am_i_whitelisted(ctx):
-        await ctx.channel.reply("Son of a bitch...")
+        await ctx.reply("Son of a bitch...")
         del prompts[ctx.channel.id]
     else:
-        await ctx.channel.reply("You can't kill me! Don't even try! (wasn't whitelisted)")
+        await ctx.reply("You can't kill me! Don't even try! (wasn't whitelisted)")
 
 @client.command()
 async def ask(ctx, *, question):
