@@ -69,6 +69,47 @@ async def backstory(ctx, *, inputprompt):
     prompts[ctx.channel.guild.id] = PROMPT
    await ctx.send(f"Changed backstory.")
 
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+
+    if isinstance(message.channel, discord.DMChannel):
+        return
+
+    if message.content.startswith(PREFIX + "whitelist"):
+        await message.channel.send("Frickin' awesome! thanks for whitelisting me dude")
+        prompts[message.channel.id] = PROMPT  # Store the prompt for this channel
+        return
+
+    if message.content.startswith(PREFIX + "unwhitelist"):
+        if message.channel.id in prompts:
+            del prompts[message.channel.id]
+            await message.channel.send("NOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+        else:
+            await message.channel.send("This channel is not whitelisted.")
+        return
+
+    # Check if the channel is whitelisted for automatic responses
+    if message.channel.id in prompts:
+        async with message.channel.typing():
+            response = replicate.run(
+                "meta/llama-2-70b-chat",
+                input={
+                    "debug": False,
+                    "top_k": 50,
+                    "top_p": 1,
+                    "prompt": message.content,
+                    "temperature": 0.5,
+                    "system_prompt": prompts[message.channel.id],  # Use channel-specific prompt
+                    "max_new_tokens": 500,
+                    "min_new_tokens": -1
+                },
+            )
+
+        await message.channel.send(''.join(response))
+        return
+
 @client.command()
 async def ask(ctx, *, question):
     async with ctx.typing():
