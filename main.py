@@ -97,13 +97,13 @@ async def on_message(message: discord.Message):
     await client.process_commands(message) # without this, commands stop running.
 
 @client.command()
-@commands.has_permissions(manage_channels=True)
+#@commands.has_permissions(manage_channels=True)
 async def whitelist(ctx: Context):
     await ctx.reply("Frickin' awesome! thanks for whitelisting me dude")
     prompts[ctx.channel.id] = PROMPT  # Store the prompt for this channel
     
 @client.command()
-@commands.has_permissions(manage_channels=True)
+#@commands.has_permissions(manage_channels=True)
 async def unwhitelist(ctx: Context):
     if am_i_whitelisted(ctx):
         await ctx.channel.reply("Son of a bitch...")
