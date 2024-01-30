@@ -1,3 +1,6 @@
+# BAD CODE
+do not merge until i can fix the stupid bugs
+
 # mercenary
 ai discord chatbot
 
