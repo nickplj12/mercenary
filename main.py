@@ -191,7 +191,7 @@ async def on_message(message: discord.Message):
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send(f"Invalid command used. `Trying to ask something? Use {PREFIX}ask! Want a list of commands? Use {PREFIX}cmds!`")
+        await ctx.send(f"Invalid command used. `Trying to ask something? Use {PREFIX}ask! Want a list of commands? Use {PREFIX}help!`")
     else:
         await ctx.send(f"Son of a bitch...\n```\nAn error occurred:\n{str(error)}\n```")
 
