@@ -23,6 +23,13 @@ async def on_ready():
   await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name='big beautiful women'))
   print("connected")
 
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        await ctx.send("Invalid command used.")
+    else:
+        await ctx.send(f"An error occurred: {str(error)}")
+
 #redchanit funny
 #@client.event
 #async def on_message(message):
