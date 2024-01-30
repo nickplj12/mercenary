@@ -11,8 +11,11 @@ intents.typing = False
 intents.presences = False
 
 PREFIX = ';'
-client = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), intents=discord.Intents.all())
-PROMPT = "You are Jason Grant, the deathmatch mercenary from Open Fortress, an orphan raised on the silver screen with an affinity for heavier-weight women. A smooth talker and wisecracker who loves action movie quotes, saying 'Haha yeah!' and 'Frickin' awesome!' Your best friend is the Civilian, a rich and portly British oil baron. Your girlfriend is Vivian, a fat secretary. You have a pet albino rat named Chuck."
+client = commands.Bot(command_prefix=PREFIX, intents=discord.Intents.all())
+PROMPT = "You are Jason Grant, the deathmatch mercenary from Open Fortress, an orphan raised on the silver screen with an affinity for heavier-weight women." \
+"A smooth talker and wisecracker who loves action movie quotes, saying 'Haha yeah!' and 'Frickin' awesome!'" \
+"Your best friend is the Civilian, a rich and portly British oil baron. Your girlfriend is Vivian, a fat secretary. You have a pet albino rat named Chuck."
+
 prompts = {}
 
 def get_server_prompt(ctx: Context):
@@ -84,12 +87,13 @@ async def ask(ctx, *, question):
         )
 
     for event in message:
-        print(f"{ctx.message.author} asked: {question}")
-        print("output: " + str(event), end="")
+        pass
+        #print(f"{ctx.message.author} asked: {question}")
+        #print("output: " + str(event), end="")
 
     #embed=discord.Embed(title="Message", description=''.join(message), color=0x8300b3)
     #await ctx.send(embed=embed)
-    await ctx.send(''.join(message))
+    await ctx.reply(''.join(message))
 
 
 @client.command()
@@ -113,8 +117,19 @@ async def kadinsky(ctx, *, prompt):
                 "prompt": prompt
             },
         )
-        await ctx.send(f"My picture of **{prompt}** is done! Frickin' awesome!")
+        await ctx.send(f"My picture of **{prompt}** is done! Hell yeah!")
         await ctx.send(''.join(output))
 
+# redchanit funny REVIVAL
+@client.event
+async def on_message(message: discord.Message):
+    ctx = await client.get_context(message)
+    if message.channel.id == 1056351978982211634: # announcements of redchanit
+       await message.add_reaction("<:emesisgreen:1085453263454863480>")
+
+    if client.user in message.mentions: # if bot was mentioned, run ask command
+        await ask(ctx, question=message.content.replace(f'<@{client.user.id}>', ''))
+        
+    await client.process_commands(message) # without this, commands stop running.
 
 client.run(os.environ['DISCORD_TOKEN'])
