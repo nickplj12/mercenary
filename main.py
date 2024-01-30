@@ -72,7 +72,7 @@ async def ask(ctx, *, question):
         message = replicate.run(
             "meta/llama-2-70b-chat",
             input={
-                "debug": False,
+                "debug": True,
                 "top_k": 50,
                 "top_p": 1,
                 "prompt": question,
