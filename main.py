@@ -19,6 +19,7 @@ PROMPT = "You are Jason Grant, the deathmatch mercenary from Open Fortress, an o
 "He taught you most of what you know now, how to protect yourself in a fight, as well as your one-liners."
 
 prompts = {}
+chat_memory = ""
 
 def get_server_prompt(ctx: Context):
     return prompts.get(ctx.channel.id, PROMPT)
@@ -92,7 +93,10 @@ async def backstory(ctx, *, inputprompt):
    await ctx.send(f"Changed backstory.")
    
 @client.command(description="Ask the Mercenary from Open Fortress (real) a question.")
-async def ask(ctx, *, question):
+async def ask(ctx: Context, *, question):
+    global chat_memory
+    chat_memory += f"\n{ctx.author.global_name}: {question}" 
+    
     async with ctx.typing():
         message = replicate.run(
             "meta/llama-2-70b-chat",
@@ -102,7 +106,12 @@ async def ask(ctx, *, question):
                 "top_p": 1,
                 "prompt": question,
                 "temperature": 0.5,
-                "system_prompt": get_server_prompt(ctx),
+                "system_prompt": f"""{get_server_prompt(ctx)}
+here is your current chat history, use this to remember context from earlier. (if 'You' said this, you said this. Otherwise, that was a user.).
+this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remember you saying this some time ago." if it isn't acutally in history, dont say it.
+---beginning of your chat history, use this as memory.---
+{chat_memory}
+---end of your chat history---""",
                 "max_new_tokens": 500,
                 "min_new_tokens": -1
             },
@@ -115,6 +124,7 @@ async def ask(ctx, *, question):
 
     #embed=discord.Embed(title="Message", description=''.join(message), color=0x8300b3)
     #await ctx.send(embed=embed)
+    chat_memory += f"\nYou: {''.join(message)}"
     await ctx.reply(''.join(message))
 
 @client.command(description="Generates an image using a prompt that uses SDXL")
