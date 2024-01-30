@@ -1,5 +1,5 @@
 # TEST VERISON
-test verison so if something goes wrong with the code we always have a backupuse the main verison here https://github.com/nickplj12/mercenary/tree/main
+test verison so if something goes wrong with the code we always have a backup use the main verison here https://github.com/nickplj12/mercenary/tree/main
 
 # mercenary
 ai discord chatbot
