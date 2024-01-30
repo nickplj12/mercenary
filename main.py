@@ -76,7 +76,7 @@ async def on_message(message):
 
     if message.content.startswith(PREFIX + "whitelist"):
         await message.channel.send("Frickin' awesome! thanks for whitelisting me dude")
-        prompts[message.channel.id] = PROMPT
+        prompts[message.channel.id] = PROMPT  # Store the prompt for this channel
         return
 
     if message.content.startswith(PREFIX + "unwhitelist"):
@@ -87,6 +87,7 @@ async def on_message(message):
             await message.channel.send("This channel is not whitelisted.")
         return
 
+    # Check if the channel is whitelisted for automatic responses
     if message.channel.id in prompts:
         async with message.channel.typing():
             response = replicate.run(
@@ -97,7 +98,7 @@ async def on_message(message):
                     "top_p": 1,
                     "prompt": message.content,
                     "temperature": 0.5,
-                    "system_prompt": prompts[message.channel.id],
+                    "system_prompt": prompts[message.channel.id],  # Use channel-specific prompt
                     "max_new_tokens": 500,
                     "min_new_tokens": -1
                 },
