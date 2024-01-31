@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import Context
 from dotenv import load_dotenv
+import re
 load_dotenv()
 
 intents = discord.Intents.all()
@@ -15,11 +16,12 @@ client = commands.Bot(command_prefix=PREFIX, intents=discord.Intents.all())
 PROMPT = "You are Jason Grant, the deathmatch mercenary from Open Fortress, an orphan raised on the silver screen with an affinity for heavier-weight women. " \
 "A smooth talker and wisecracker who loves action movie quotes, saying 'Haha yeah!' and 'Frickin' awesome! " \
 "Your best friend is the Civilian, a rich and portly British oil baron. Your girlfriend is Vivian, a fat secretary. You have a pet albino rat named Chuck." \
-"A friend from long ago, Merv, is the one who introduced you to the world of deathmatch." \
-"He taught you most of what you know now, how to protect yourself in a fight, as well as your one-liners."
+"A friend from long ago, Merv, is the one who introduced you to the world of deathmatch. " \
+"He taught you most of what you know now, how to protect yourself in a fight, as well as your one-liners. "
 
 prompts = {}
-chat_memory = ""
+chat_memory = []
+
 
 def get_server_prompt(ctx: Context):
     return prompts.get(ctx.channel.id, PROMPT)
@@ -87,15 +89,28 @@ async def say(ctx, *, prompt):
 
 @client.command(description="Change the backstory for the AI. Use 'default' to reset back to the default backstory.")
 async def backstory(ctx, *, inputprompt):
-   prompts[ctx.channel.guild.id] = inputprompt
-   if inputprompt == "default":
-    prompts[ctx.channel.guild.id] = PROMPT
-   await ctx.send(f"Changed backstory.")
+    global chat_memory
+    prompts[ctx.channel.guild.id] = inputprompt
+    if inputprompt == "default":
+        prompts[ctx.channel.guild.id] = PROMPT
+    chat_memory = ""
+    await ctx.send(f"Changed backstory.")
    
 @client.command(description="Ask the Mercenary from Open Fortress (real) a question.")
 async def ask(ctx: Context, *, question):
     global chat_memory
-    chat_memory += f"\n{ctx.author.global_name}: {question}" 
+    chat_memory.append(f"{ctx.author.global_name}: {question}") 
+    if len(chat_memory) >= 10:
+        chat_memory = chat_memory[-10:]
+
+    gen_prompt = f"""{get_server_prompt(ctx)}
+here is your current chat history, use this to remember context from earlier. (if 'You' said this, you said this. Otherwise, that was a user.).
+this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remember you saying this some time ago." if it isn't acutally in history, dont say it.
+---beginning of your chat history, use this as memory.---
+{'\n'.join(chat_memory)}
+---end of your chat history---"""
+
+    print(gen_prompt)
     
     async with ctx.typing():
         message = replicate.run(
@@ -106,12 +121,7 @@ async def ask(ctx: Context, *, question):
                 "top_p": 1,
                 "prompt": question,
                 "temperature": 0.5,
-                "system_prompt": f"""{get_server_prompt(ctx)}
-here is your current chat history, use this to remember context from earlier. (if 'You' said this, you said this. Otherwise, that was a user.).
-this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remember you saying this some time ago." if it isn't acutally in history, dont say it.
----beginning of your chat history, use this as memory.---
-{chat_memory}
----end of your chat history---""",
+                "system_prompt": gen_prompt,
                 "max_new_tokens": 500,
                 "min_new_tokens": -1
             },
@@ -124,7 +134,7 @@ this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remem
 
     #embed=discord.Embed(title="Message", description=''.join(message), color=0x8300b3)
     #await ctx.send(embed=embed)
-    chat_memory += f"\nYou: {''.join(message)}"
+    chat_memory.append(f"You: {''.join(message)}")
     await ctx.reply(''.join(message))
 
 @client.command(description="Generates an image using a prompt that uses SDXL")
@@ -181,7 +191,8 @@ async def on_message(message: discord.Message):
         return
     
     if client.user in message.mentions: # if bot was mentioned, run ask command
-        await ask(ctx, question=message.content.replace(f'<@{client.user.id}>', ''))
+        await ask(ctx, question=message.content.replace(f'<@{client.user.id}>', '').strip())
+        return
     
     if am_i_whitelisted(ctx):
         await ask(ctx, question=message.content)
