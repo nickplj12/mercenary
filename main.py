@@ -87,7 +87,7 @@ client.help_command = MyHelpCommand(description="Show this menu.")
 async def say(ctx, *, prompt):
    await ctx.send(prompt)
 
-@client.command(description="Change the backstory for the AI. Use 'default' to reset back to the default backstory.")
+@client.command(description="Change the backstory for the AI. Use 'default' to reset back to the default backstory. Leave empty to get current backstory.")
 async def backstory(ctx, *, inputprompt=""):
     global chat_memory
     if inputprompt.strip() == "":
