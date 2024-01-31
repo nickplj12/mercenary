@@ -88,13 +88,16 @@ async def say(ctx, *, prompt):
    await ctx.send(prompt)
 
 @client.command(description="Change the backstory for the AI. Use 'default' to reset back to the default backstory.")
-async def backstory(ctx, *, inputprompt):
+async def backstory(ctx, *, inputprompt=""):
     global chat_memory
+    if inputprompt.strip() == "":
+        await ctx.reply(prompts.get(ctx.channel.guild.id, PROMPT))
+        return
     prompts[ctx.channel.guild.id] = inputprompt
     if inputprompt == "default":
         prompts[ctx.channel.guild.id] = PROMPT
     chat_memory = ""
-    await ctx.send(f"Changed backstory.")
+    await ctx.reply(f"Changed backstory.")
    
 @client.command(description="Ask the Mercenary from Open Fortress (real) a question.")
 async def ask(ctx: Context, *, question):
