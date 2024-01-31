@@ -105,12 +105,12 @@ async def ask(ctx: Context, *, question):
     chat_memory.append(f"{ctx.author.global_name}: {question}") 
     if len(chat_memory) >= 10:
         chat_memory = chat_memory[-10:]
-
+    memory_string = '\n'.join(chat_memory)
     gen_prompt = f"""{get_server_prompt(ctx)}
 here is your current chat history, use this to remember context from earlier. (if 'You' said this, you said this. Otherwise, that was a user.).
 this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remember you saying this some time ago." if it isn't acutally in history, dont say it.
 ---beginning of your chat history, use this as memory.---
-{'\n'.join(chat_memory)}
+{memory_string}
 ---end of your chat history---"""
 
     print(gen_prompt)
