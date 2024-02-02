@@ -19,3 +19,11 @@ procs: list[subprocess.Popen] = []
 for item in conf['load']:
     item = try_dir('confs', item) or try_dir('example_confs', item)
     procs.append(subprocess.Popen(executable=sys.executable, args=['python', 'main.py', f'{item}']))
+
+while True:
+    died = 0
+    for proc in procs:
+        if died >= len(procs):
+            break
+        if proc.poll():
+            died += 1
