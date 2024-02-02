@@ -18,6 +18,12 @@ for the discord bot, enable these settings:
 
 make sure you get all the files in the repository.
 
+create a file called master_conf.yaml:
+```yaml
+load:
+  - mercenary
+```
+
 change the .env file to include your discord bot token and your replicate api token.
 
 in main.py, you can edit the prompt to your liking or you can leave it the same as it is.

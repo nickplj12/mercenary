@@ -1,2 +1,3 @@
 .env
 confs/*
+master_conf.yaml

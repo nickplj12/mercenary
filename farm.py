@@ -1,6 +1,8 @@
+import signal
 import yaml
 import subprocess
 import os
+import sys
 
 with open('master_conf.yaml', 'r') as f:
     conf = yaml.load(f, Loader=yaml.Loader)
@@ -13,6 +15,7 @@ def try_dir(dir: str, match: str):
         if basename == match.lower():
             return f'{dir}/{name}'
 
+procs: list[subprocess.Popen] = []
 for item in conf['load']:
     item = try_dir('confs', item) or try_dir('example_confs', item)
-    subprocess.run(['python', 'main.py', f'{item}'])
+    procs.append(subprocess.Popen(executable=sys.executable, args=['python', 'main.py', f'{item}']))
