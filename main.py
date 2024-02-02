@@ -5,23 +5,63 @@ from discord.ext import commands
 from discord.ext.commands import Context
 from dotenv import load_dotenv
 import requests
+import yaml
+import sys
 load_dotenv()
 
 intents = discord.Intents.all()
 intents.typing = False
 intents.presences = False
 
-PREFIX = ';'
-client = commands.Bot(command_prefix=PREFIX, intents=discord.Intents.all())
-PROMPT = "You are Jason Grant, the deathmatch mercenary from Open Fortress, an orphan raised on the silver screen with an affinity for heavier-weight women. " \
-"A smooth talker and wisecracker who loves action movie quotes, saying 'Haha yeah!' and 'Frickin' awesome! " \
-"Your best friend is the Civilian, a rich and portly British oil baron. Your girlfriend is Vivian, a fat secretary. You have a pet albino rat named Chuck." \
-"A friend from long ago, Merv, is the one who introduced you to the world of deathmatch. " \
-"He taught you most of what you know now, how to protect yourself in a fight, as well as your one-liners. "
+# load config
+try:
+    config_file = sys.argv[1]
+except:
+    config_file = "example_confs/mercenary.yaml"
+print(config_file)
+if config_file:
+    with open(config_file, "r") as f:
+        config = yaml.load(f, Loader=yaml.Loader)
+global prefix
+global client
+NAME = config['name']
+
+ENV_TOKEN_NAME = config['env_token_name']
+
+VOICE_TRAINING = config['voice_training']
+
+PROMPT = config['language']['prompt']
+DRAWING_FINISHED = config['language']['drawing_finished']
+ERROR = config['language']['error']
+WHITELIST_SUCCESS = config['language']['whitelist_success']
+UNWHITELIST_SUCCESS = config['language']['unwhitelist_success']
+UNWHITELIST_FAIL = config['language']['unwhitelist_fail']
+INVALID_COMMAND = config['language']['invalid_command']
+
+ACTIVITY_TYPE = discord.ActivityType[config['activity']['type']]
+ACTIVITY_NAME = config['activity']['name']
+
+if config['prefix']:
+    prefix = config['prefix'].strip()
+
+# i hate this code so much
+# why does this have to happen
+if prefix and config['character_is_prefix']:
+    if not config['mention_is_prefix']:     # ';' commands are allowed, mentions will ask
+        client = commands.Bot(command_prefix=prefix, intents=discord.Intents.all())
+    else:                                   # ';' commands are allowed, mentions are commands
+        client = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=discord.Intents.all())
+elif config['mention_is_prefix']:           # ';' commands are not allowed, mentions are commands
+    client = commands.Bot(command_prefix=commands.when_mentioned(), intents=discord.Intents.all())
+else:
+    print("failed to create a prefix.")
+    exit(1)
+
+
+## done with config ##
 
 prompts = {}
 chat_memory = []
-
 
 def get_server_prompt(ctx: Context):
     return prompts.get(ctx.channel.id, PROMPT)
@@ -99,7 +139,7 @@ async def backstory(ctx, *, inputprompt=""):
     chat_memory = ""
     await ctx.reply(f"Changed backstory.")
 
-@client.command(description="Ask the Mercenary from Open Fortress (real) a question.")
+@client.command(description=f"Ask {NAME} a question.")
 async def ask(ctx: Context, *, question):
     global chat_memory
     chat_memory.append(f"{ctx.author.global_name}: {question}") 
@@ -146,67 +186,20 @@ async def ttssay(ctx, *, prompt):
        output = replicate.run(
            "lucataco/xtts-v2:684bc3855b37866c0c65add2ff39c78f3dea3f4ff103a436465326e0f438d55e",
            input={
-               "speaker": "https://cdn.discordapp.com/attachments/1158084069528178769/1202787762152144896/Merc_Voice_Reel.mp3",
+               "speaker": VOICE_TRAINING,
                "text": prompt
            }
        )
 
        response = requests.get(output, allow_redirects=True)
-       open("output.mp3", "wb").write(response.content)
-       await ctx.send(file=discord.File(r'output.mp3'))
+       with open("output.mp3", "wb") as f:
+           f.write(response.content)
+       await ctx.send(file=discord.File('output.mp3'))
 
-@client.command(description="Ask the Mercenary from Open Fortress (real) a question using Coqui (TTS) (he can speak??)")
+@client.command(description=f"Ask {NAME} a question using Coqui (TTS) (he can speak??)")
 async def ttsask(ctx: Context, *, question):
-    global chat_memory
-    chat_memory.append(f"{ctx.author.global_name}: {question}") 
-    if len(chat_memory) >= 10:
-        chat_memory = chat_memory[-10:]
-    memory_string = '\n'.join(chat_memory)
-    gen_prompt = f"""{get_server_prompt(ctx)}
-here is your current chat history, use this to remember context from earlier. (if 'You' said this, you said this. Otherwise, that was a user.).
-this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remember you saying this some time ago." if it isn't acutally in history, dont say it.
----beginning of your chat history, use this as memory.---
-{memory_string}
----end of your chat history---"""
-
-    print(gen_prompt)
-    
-    async with ctx.typing():
-        message = replicate.run(
-            "meta/llama-2-70b-chat",
-            input={
-                "debug": False,
-                "top_k": 50,
-                "top_p": 1,
-                "prompt": question,
-                "temperature": 0.5,
-                "system_prompt": gen_prompt,
-                "max_new_tokens": 500,
-                "min_new_tokens": -1
-            },
-        )
-
-    for event in message:
-        pass
-        #print(f"{ctx.message.author} asked: {question}")
-        #print("output: " + str(event), end="")
-
-    #embed=discord.Embed(title="Message", description=''.join(message), color=0x8300b3)
-    #await ctx.send(embed=embed)
-    chat_memory.append(f"You: {''.join(message)}")
-
-    output = replicate.run(
-           "lucataco/xtts-v2:684bc3855b37866c0c65add2ff39c78f3dea3f4ff103a436465326e0f438d55e",
-           input={
-               "speaker": "https://cdn.discordapp.com/attachments/1158084069528178769/1202787762152144896/Merc_Voice_Reel.mp3",
-               "text": ''.join(message)
-           }
-       )
-
-    response = requests.get(output, allow_redirects=True)
-    open("output.mp3", "wb").write(response.content)
-    await ctx.send(''.join(message))
-    await ctx.send(file=discord.File(r'output.mp3'))
+    message = await ask(ctx, question=question)
+    await ttssay(ctx, prompt=''.join(message))
     
 @client.command(description="Generates an image using a prompt that uses SDXL")
 async def sdxl(ctx, *, prompt):
@@ -217,7 +210,7 @@ async def sdxl(ctx, *, prompt):
                 "prompt": prompt
             },
         )
-        await ctx.send(f"My picture of **{prompt}** is done! Frickin' awesome!")
+        await ctx.send(format(DRAWING_FINISHED, prompt))
         await ctx.send(''.join(output))
 
 @client.command(description="Generates an image using a prompt that uses Kadinsky 2.2")
@@ -229,21 +222,21 @@ async def kadinsky(ctx, *, prompt):
                 "prompt": prompt
             },
         )
-        await ctx.send(f"My picture of **{prompt}** is done! Hell yeah!")
+        await ctx.send(format(DRAWING_FINISHED, prompt))
         await ctx.send(''.join(output))
 
 @client.command(description="Allows the bot to see ALL messages in this channel and respond to them.")
 async def whitelist(ctx: Context):
-    await ctx.reply("Frickin' awesome! thanks for whitelisting me dude")
+    await ctx.reply(WHITELIST_SUCCESS)
     prompts[ctx.channel.id] = PROMPT  # Store the prompt for this channel
     
 @client.command(description="Disables the whitelist feature (see whitelist command).")
 async def unwhitelist(ctx: Context):
     if am_i_whitelisted(ctx):
-        await ctx.reply("Son of a bitch...")
+        await ctx.reply(UNWHITELIST_SUCCESS)
         del prompts[ctx.channel.id]
     else:
-        await ctx.reply("You can't kill me! Don't even try! (wasn't whitelisted)")
+        await ctx.reply(UNWHITELIST_FAIL)
         
 ## EVENTS ##
 
@@ -273,13 +266,13 @@ async def on_message(message: discord.Message):
 @client.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send(f"Invalid command used. `Trying to ask something? Use {PREFIX}ask! Want a list of commands? Use {PREFIX}help!`")
+        await ctx.send(INVALID_COMMAND)
     else:
-        await ctx.send(f"Son of a bitch...\n```\nAn error occurred:\n{str(error)}\n```")
+        await ctx.send(f"{ERROR}\n```\nAn error occurred:\n{str(error)}\n```")
 
 @client.event
 async def on_ready():
-  await client.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name='big beautiful women'))
+  await client.change_presence(activity=discord.Activity(type=ACTIVITY_TYPE, name=ACTIVITY_NAME))
   print("connected")
 
-client.run(os.environ['DISCORD_TOKEN'])
+client.run(os.environ[ENV_TOKEN_NAME])

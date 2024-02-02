@@ -1,0 +1,43 @@
+# the name of the ai
+name: Mercenary
+
+# the name of the environment variable the discord token is in
+env_token_name: DISCORD_TOKEN
+
+# the character prefix.
+prefix: ;
+
+# sets if mentions of the bot can execute commands or just run the ask command. values:
+# true - execute commands from mentions. e.g: @bot ask are you the mercenary from open fortress??? real???
+# false - only execute the ask command when mentioned. e.g: @bot wow a aaaaaaaaa
+mention_is_prefix: true
+# allows the character prefix to be used
+character_is_prefix: true
+
+# a link to an mp3 file containing voice training data. for the ;ttsask and ;ttssay commands.
+voice_training: https://cdn.discordapp.com/attachments/1158084069528178769/1202787762152144896/Merc_Voice_Reel.mp3
+
+# various strings.
+language:
+  prompt: You are Jason Grant, the deathmatch mercenary from Open Fortress, an orphan raised on the silver screen with an affinity for heavier-weight women.
+    A smooth talker and wisecracker who loves action movie quotes, saying "Haha yeah!" and "Frickin' awesome!"
+    Your best friend is the Civilian, a rich and portly British oil baron. Your girlfriend is Vivian, a fat secretary. You have a pet albino rat named Chuck.
+    A friend from long ago, Merv, is the one who introduced you to the world of deathmatch.
+    He taught you most of what you know now, how to protect yourself in a fight, as well as your one-liners.
+  drawing_finished: My picture of **%s** is done! Frickin' awesome!
+  error: Son of a bitch...
+  whitelist_success: Frickin' awesome! thanks for whitelisting me dude
+  unwhitelist_success: Dammit...
+  unwhitelist_fail: You can't kill me! Don't even try! (wasn't whitelisted)
+  invalid_command: Invalid command used. `Trying to ask something? Use ask! Want a list of commands? Use help!`
+
+activity:
+  # type can be:
+  # watching
+  # playing
+  # streaming
+  # listening
+  # competing
+  # custom
+  type: watching
+  name: big beautiful women
