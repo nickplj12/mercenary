@@ -45,6 +45,7 @@ WHITELIST_SUCCESS: str = config['language']['whitelist_success']
 UNWHITELIST_SUCCESS: str = config['language']['unwhitelist_success']
 UNWHITELIST_FAIL: str = config['language']['unwhitelist_fail']
 INVALID_COMMAND: str = config['language']['invalid_command']
+CHAT_CLEARED: str = config['language']['chat_cleared']
 
 ACTIVITY_TYPE: discord.ActivityType = discord.ActivityType[config['activity']['type']]
 ACTIVITY_NAME: str = config['activity']['name']
@@ -264,7 +265,9 @@ async def unwhitelist(ctx: Context):
 
 @client.command(description="Clear the bot's chat history. You cannot undo this.")
 async def forget(ctx: Context):
+    global chat_memory
     chat_memory = chat_memory.clear()
+    await ctx.reply(CHAT_CLEARED)
 
 ## EVENTS ##
 

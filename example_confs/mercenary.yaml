@@ -32,6 +32,7 @@ language:
   unwhitelist_success: Dammit...
   unwhitelist_fail: You can't kill me! Don't even try! (wasn't whitelisted)
   invalid_command: Invalid command used. `Trying to ask something? Use ask! Want a list of commands? Use help!`
+  chat_cleared: Cleared chat.
 
 activity:
   # type can be:
