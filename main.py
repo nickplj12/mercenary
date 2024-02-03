@@ -157,7 +157,7 @@ async def backstory(ctx, *, inputprompt=""):
     await ctx.reply(f"Changed backstory.")
 
 @client.command(description=f"Ask {NAME} a question.")
-async def ask(ctx: Context, *, question):
+async def ask(ctx: Context, *, question, send_message=True):
     global chat_memory
     chat_memory.append(f"{ctx.author.global_name}: {question}") 
     if len(chat_memory) >= 10:
@@ -186,19 +186,13 @@ this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remem
                 "min_new_tokens": -1
             },
         )
-
-    for event in message:
-        pass
-        #print(f"{ctx.message.author} asked: {question}")
-        #print("output: " + str(event), end="")
-
-    #embed=discord.Embed(title="Message", description=''.join(message), color=0x8300b3)
-    #await ctx.send(embed=embed)
     chat_memory.append(f"You: {''.join(message)}")
-    await ctx.reply(''.join(message))
+    if send_message:
+        await ctx.reply(''.join(message))
+    return ''.join(message)
 
 @client.command(description=f"Makes {NAME} say something using {'Coqui' if not IS_GTTS else 'gTTS'} (TTS)")
-async def ttssay(ctx, *, prompt):
+async def ttssay(ctx, *, prompt, send_message=True):
     output: any
     async with ctx.typing():
         if IS_GTTS:
@@ -221,12 +215,15 @@ async def ttssay(ctx, *, prompt):
             response = requests.get(output, allow_redirects=True)
             with open("output.mp3", "wb") as f:
                 f.write(response.content)
+    if send_message:
         await ctx.send(file=discord.File('output.mp3'))
+    return discord.File('output.mp3')
 
 @client.command(description=f"Ask {NAME} a question using {'Coqui' if not IS_GTTS else 'gTTS'} (TTS) (he can speak??)")
 async def ttsask(ctx: Context, *, question):
-    message = await ask(ctx, question=question)
-    await ttssay(ctx, prompt=''.join(message))
+    message = await ask(ctx, question=question, send_message=False)
+    audio = await ttssay(ctx, prompt=message, send_message=False)
+    await ctx.reply(message, file=audio)
     
 @client.command(description="Generates an image using a prompt that uses SDXL")
 async def sdxl(ctx, *, prompt):
