@@ -15,6 +15,8 @@ mention_is_prefix: true
 character_is_prefix: true
 
 # a link to an mp3 file containing voice training data. for the ;ttsask and ;ttssay commands.
+# set this to 'gtts-<lang>.<tld>' to use gtts instead.
+# what to fill in for gtts: https://gtts.readthedocs.io/en/latest/module.html#localized-accents
 voice_training: https://cdn.discordapp.com/attachments/1158084069528178769/1202787762152144896/Merc_Voice_Reel.mp3
 
 # various strings.

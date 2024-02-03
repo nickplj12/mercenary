@@ -7,39 +7,56 @@ from dotenv import load_dotenv
 import requests
 import yaml
 import sys
+from gtts import gTTS
 load_dotenv()
 
 intents = discord.Intents.all()
 intents.typing = False
 intents.presences = False
 
-# load config
-try:
-    config_file = sys.argv[1]
-except:
-    config_file = "example_confs/mercenary.yaml"
-print(config_file)
-if config_file:
-    with open(config_file, "r") as f:
-        config = yaml.load(f, Loader=yaml.Loader)
+global config
 global prefix
 global client
-NAME = config['name']
+config = {}
 
-ENV_TOKEN_NAME = config['env_token_name']
+def load_config(config_file: str):
+    global config
+    print(config_file)
+    if os.path.isfile(config_file):
+        with open(config_file, "r") as f:
+            config |= yaml.load(f, Loader=yaml.Loader)
+load_config("example_confs/mercenary.yaml")
+try:
+    load_config(sys.argv[1])
+except:
+    pass
+print(config)
 
-VOICE_TRAINING = config['voice_training']
+NAME: str = config['name']
+ENV_TOKEN_NAME: str = config['env_token_name']
 
-PROMPT = config['language']['prompt']
-DRAWING_FINISHED = config['language']['drawing_finished']
-ERROR = config['language']['error']
-WHITELIST_SUCCESS = config['language']['whitelist_success']
-UNWHITELIST_SUCCESS = config['language']['unwhitelist_success']
-UNWHITELIST_FAIL = config['language']['unwhitelist_fail']
-INVALID_COMMAND = config['language']['invalid_command']
+VOICE_TRAINING: str = config['voice_training']
+IS_GTTS: bool = config['voice_training'].startswith('gtts-')
 
-ACTIVITY_TYPE = discord.ActivityType[config['activity']['type']]
-ACTIVITY_NAME = config['activity']['name']
+PROMPT: str = config['language']['prompt']
+DRAWING_FINISHED: str = config['language']['drawing_finished']
+ERROR: str = config['language']['error']
+WHITELIST_SUCCESS: str = config['language']['whitelist_success']
+UNWHITELIST_SUCCESS: str = config['language']['unwhitelist_success']
+UNWHITELIST_FAIL: str = config['language']['unwhitelist_fail']
+INVALID_COMMAND: str = config['language']['invalid_command']
+
+ACTIVITY_TYPE: discord.ActivityType = discord.ActivityType[config['activity']['type']]
+ACTIVITY_NAME: str = config['activity']['name']
+
+def get_gtts_string(text):
+    split = text.split('-')
+    print(split)
+    return {
+        "lang": split[1],
+        "tld": split[2],
+    }
+    
 
 if config['prefix']:
     prefix = config['prefix'].strip()
@@ -180,23 +197,33 @@ this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remem
     chat_memory.append(f"You: {''.join(message)}")
     await ctx.reply(''.join(message))
 
-@client.command(description="Makes the bot say something using Coqui (TTS)")
+@client.command(description=f"Makes {NAME} say something using {'Coqui' if not IS_GTTS else 'gTTS'} (TTS)")
 async def ttssay(ctx, *, prompt):
-   async with ctx.typing(): 
-       output = replicate.run(
-           "lucataco/xtts-v2:684bc3855b37866c0c65add2ff39c78f3dea3f4ff103a436465326e0f438d55e",
-           input={
-               "speaker": VOICE_TRAINING,
-               "text": prompt
-           }
-       )
+    output: any
+    async with ctx.typing():
+        if IS_GTTS:
+            gtts_stuff = get_gtts_string(VOICE_TRAINING)
+            output = gTTS(text=prompt, tld=gtts_stuff["tld"], lang=gtts_stuff["lang"], slow=False)
+            try:
+                os.remove("output.mp3")
+            except:
+                print("file does not exist, so wont remove")
+            output.save("output.mp3")
+        else:
+            output = replicate.run(
+                "lucataco/xtts-v2:684bc3855b37866c0c65add2ff39c78f3dea3f4ff103a436465326e0f438d55e",
+                input={
+                    "speaker": VOICE_TRAINING,
+                    "text": prompt
+                }
+            )
 
-       response = requests.get(output, allow_redirects=True)
-       with open("output.mp3", "wb") as f:
-           f.write(response.content)
-       await ctx.send(file=discord.File('output.mp3'))
+            response = requests.get(output, allow_redirects=True)
+            with open("output.mp3", "wb") as f:
+                f.write(response.content)
+        await ctx.send(file=discord.File('output.mp3'))
 
-@client.command(description=f"Ask {NAME} a question using Coqui (TTS) (he can speak??)")
+@client.command(description=f"Ask {NAME} a question using {'Coqui' if not IS_GTTS else 'gTTS'} (TTS) (he can speak??)")
 async def ttsask(ctx: Context, *, question):
     message = await ask(ctx, question=question)
     await ttssay(ctx, prompt=''.join(message))

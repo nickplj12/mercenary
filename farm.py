@@ -17,8 +17,8 @@ def try_dir(dir: str, match: str):
 
 procs: list[subprocess.Popen] = []
 for item in conf['load']:
-    item = try_dir('confs', item) or try_dir('example_confs', item)
-    procs.append(subprocess.Popen(executable=sys.executable, args=['python', 'main.py', f'{item}']))
+    realitem = try_dir('confs', item) or try_dir('example_confs', item)
+    procs.append(subprocess.Popen(executable=sys.executable, args=['python', 'main.py', f'{realitem}']))
 
 while True:
     died = 0
