@@ -266,7 +266,7 @@ async def unwhitelist(ctx: Context):
 @client.command(description="Clear the bot's chat history. You cannot undo this.")
 async def forget(ctx: Context):
     global chat_memory
-    chat_memory = chat_memory.clear()
+    chat_memory.clear()
     await ctx.reply(CHAT_CLEARED)
 
 ## EVENTS ##
