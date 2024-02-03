@@ -235,8 +235,7 @@ async def sdxl(ctx, *, prompt):
                 "prompt": prompt
             },
         )
-        await ctx.send(format(DRAWING_FINISHED, prompt))
-        await ctx.send(''.join(output))
+        await ctx.send(DRAWING_FINISHED.format(drawing=prompt, link=''.join(output)))
 
 @client.command(description="Generates an image using a prompt that uses Kadinsky 2.2")
 async def kadinsky(ctx, *, prompt):
@@ -247,8 +246,7 @@ async def kadinsky(ctx, *, prompt):
                 "prompt": prompt
             },
         )
-        await ctx.send(format(DRAWING_FINISHED, prompt))
-        await ctx.send(''.join(output))
+        await ctx.send(DRAWING_FINISHED.format(drawing=prompt, link=''.join(output)))
 
 @client.command(description="Allows the bot to see ALL messages in this channel and respond to them.")
 async def whitelist(ctx: Context):

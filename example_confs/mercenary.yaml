@@ -26,7 +26,7 @@ language:
     Your best friend is the Civilian, a rich and portly British oil baron. Your girlfriend is Vivian, a fat secretary. You have a pet albino rat named Chuck.
     A friend from long ago, Merv, is the one who introduced you to the world of deathmatch.
     He taught you most of what you know now, how to protect yourself in a fight, as well as your one-liners.
-  drawing_finished: My picture of **%s** is done! Frickin' awesome!
+  drawing_finished: My [picture]({link}) of **{drawing}** is done! Frickin' awesome!
   error: Son of a bitch...
   whitelist_success: Frickin' awesome! thanks for whitelisting me dude
   unwhitelist_success: Dammit...
