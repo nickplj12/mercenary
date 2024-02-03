@@ -216,7 +216,7 @@ async def ttssay(ctx, *, prompt, send_message=True):
             with open("output.mp3", "wb") as f:
                 f.write(response.content)
     if send_message:
-        await ctx.send(file=discord.File('output.mp3'))
+        await ctx.reply(file=discord.File('output.mp3'))
     return discord.File('output.mp3')
 
 @client.command(description=f"Ask {NAME} a question using {'Coqui' if not IS_GTTS else 'gTTS'} (TTS) (he can speak??)")
@@ -261,7 +261,11 @@ async def unwhitelist(ctx: Context):
         del prompts[ctx.channel.id]
     else:
         await ctx.reply(UNWHITELIST_FAIL)
-        
+
+@client.command(description="Clear the bot's chat history. You cannot undo this.")
+async def forget(ctx: Context):
+    chat_memory = chat_memory.clear()
+
 ## EVENTS ##
 
 @client.event
