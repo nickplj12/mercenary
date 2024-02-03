@@ -1,3 +1,4 @@
 .env
 confs/*
 master_conf.yaml
+output.mp3
