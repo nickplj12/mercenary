@@ -160,7 +160,7 @@ async def backstory(ctx, *, inputprompt=""):
 @client.command(description=f"Ask {NAME} a question.")
 async def ask(ctx: Context, *, question, send_message=True):
     global chat_memory
-    chat_memory.append(f"{ctx.author.global_name}: {question}") 
+    chat_memory.append(f"{ctx.author.display_name}: {question}") 
     if len(chat_memory) >= 10:
          chat_memory = chat_memory[-10:]
     memory_string = '\n'.join(chat_memory)
