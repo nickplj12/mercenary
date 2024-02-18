@@ -70,7 +70,7 @@ if prefix and config['character_is_prefix']:
     else:                                   # ';' commands are allowed, mentions are commands
         client = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=discord.Intents.all())
 elif config['mention_is_prefix']:           # ';' commands are not allowed, mentions are commands
-    client = commands.Bot(command_prefix=commands.when_mentioned(), intents=discord.Intents.all())
+    client = commands.Bot(command_prefix=commands.when_mentioned, intents=discord.Intents.all())
 else:
     print("failed to create a prefix.")
     exit(1)
@@ -178,7 +178,7 @@ this is for you to refrence as memory, not to use in chat. i.e. "oh yes, i remem
             "meta/llama-2-70b-chat",
             input={
                 "debug": False,
-                "top_k": 50,
+                #"top_k": 50, # doesn't work
                 "top_p": 1,
                 "prompt": question,
                 "temperature": 0.5,
